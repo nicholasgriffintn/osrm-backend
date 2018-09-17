@@ -12,11 +12,11 @@ using namespace osrm::updater;
 
 BOOST_AUTO_TEST_CASE(timezoner_test)
 {
-    const char json[] = "{ \"type\" : \"FeatureCollection\", \"features\": [{ \"type\" : "
-                        "\"Feature\",\"properties\" : { \"tzid\" : \"Europe/Berlin\"}, "
-                        "\"geometry\" : { \"type\":\"polygon\", \"coordinates\": "
-                        "[[[8.28369,48.88277], [8.57757, 48.88277], [8.57757, 49.07206], [8.28369, "
-                        "49.07206], [8.28369, 48.88277]]] }} ]}";
+    auto json = R"({ "type" : "FeatureCollection", "features": [{ "type" : 
+                        "Feature", "properties" : { "tzid" : "Europe/Berlin"},
+                        "geometry" : { "type" : "polygon", "coordinates":
+                        [[[8.28369,48.88277], [8.57757, 48.88277], [8.57757, 49.07206], [8.28369,
+                        49.07206], [8.28369, 48.88277]]] }} ]} )";
     std::time_t now = time(0);
     BOOST_CHECK_NO_THROW(Timezoner tz(json, now));
 
@@ -24,26 +24,26 @@ BOOST_AUTO_TEST_CASE(timezoner_test)
     BOOST_CHECK_NO_THROW(Timezoner tz(test_path, now));
 
     // missing opening bracket
-    const char bad[] = "\"type\" : \"FeatureCollection\", \"features\": [{ \"type\" : "
-                       "\"Feature\",\"properties\" : { \"TZID\" : \"Europe/Berlin\"}, \"geometry\" "
-                       ": { \"type\":\"polygon\", \"coordinates\": [[[8.28369,48.88277], [8.57757, "
-                       "48.88277], [8.57757, 49.07206], [8.28369, 49.07206], [8.28369, 48.88277]]] "
-                       "}} ]}";
+    auto bad = R"({ "type" : "FeatureCollection", "features": [{ "type" : 
+                       "Feature","properties" : { "TZID" : "Europe/Berlin"}, "geometry" 
+                       : { "type":"polygon", "coordinates": [[[8.28369,48.88277], [8.57757, 
+                       48.88277], [8.57757, 49.07206], [8.28369, 49.07206], [8.28369, 48.88277]]] 
+                       }} ]})";
     BOOST_CHECK_THROW(Timezoner tz(bad, now), util::exception);
 
     // missing / malformed FeatureCollection type field
-    const char missing_type[] = "{ \"FeatureCollection\", \"features\": [{ \"type\" : "
-                                "\"Feature\",\"properties\" : { \"TZID\" : \"Europe/Berlin\"}, "
-                                "\"geometry\" : { \"type\":\"polygon\", \"coordinates\": "
-                                "[[[8.28369,48.88277], [8.57757, 48.88277], [8.57757, 49.07206], "
-                                "[8.28369, 49.07206], [8.28369, 48.88277]]] }} ]}";
+    auto missing_type = R"({ "FeatureCollection", "features": [{ "type" :
+                                "Feature","properties" : { "TZID" : "Europe/Berlin"},
+                                "geometry" : { "type":"polygon", "coordinates":
+                                [[[8.28369,48.88277], [8.57757, 48.88277], [8.57757, 49.07206],
+                                [8.28369, 49.07206], [8.28369, 48.88277]]] }} ]})";
     BOOST_CHECK_THROW(Timezoner tz(missing_type, now), util::exception);
 
-    const char missing_featc[] = "{ \"type\" : \"Collection\", \"features\": [{ \"type\" : "
-                                 "\"Feature\",\"properties\" : { \"TZID\" : \"Europe/Berlin\"}, "
-                                 "\"geometry\" : { \"type\":\"polygon\", \"coordinates\": "
-                                 "[[[8.28369,48.88277], [8.57757, 48.88277], [8.57757, 49.07206], "
-                                 "[8.28369, 49.07206], [8.28369, 48.88277]]] }} ]}";
+    auto missing_featc = R"({ "type" : "Collection", "features": [{ "type" :
+                                 "Feature","properties" : { "TZID" : "Europe/Berlin"},
+                                 "geometry" : { "type":"polygon", "coordinates":
+                                 [[[8.28369,48.88277], [8.57757, 48.88277], [8.57757, 49.07206],
+                                 [8.28369, 49.07206], [8.28369, 48.88277]]] }} ]})";
     BOOST_CHECK_THROW(Timezoner tz(missing_featc, now), util::exception);
 }
 BOOST_AUTO_TEST_SUITE_END()
