@@ -54,10 +54,10 @@ corech/$(DATA_NAME).osrm.hsgr: corech/$(DATA_NAME).osrm $(PROFILE) $(OSRM_CONTRA
 	@echo "Running osrm-contract..."
 	$(TIMER) "osrm-contract\t$@" $(OSRM_CONTRACT) --core=0.5 $<
 
-# mld/$(DATA_NAME).osrm.partition: mld/$(DATA_NAME).osrm $(PROFILE) $(OSRM_PARTITION)
-# 	@echo "Running osrm-partition..."
-# 	$(TIMER) "osrm-partition\t$@" $(OSRM_PARTITION) $<
-# 	$(TIMER) "osrm-customize\t$@" $(OSRM_CUSTOMIZE) $<
+mld/$(DATA_NAME).osrm.partition: mld/$(DATA_NAME).osrm $(PROFILE) $(OSRM_PARTITION)
+ 	@echo "Running osrm-partition..."
+ 	$(TIMER) "osrm-partition\t$@" $(OSRM_PARTITION) $<
+ 	$(TIMER) "osrm-customize\t$@" $(OSRM_CUSTOMIZE) $<
 
 $(DATA_NAME).requests: $(DATA_NAME).poly
 	$(POLY2REQ) $(DATA_NAME).poly > $(DATA_NAME).requests
@@ -74,11 +74,11 @@ benchmark: data $(DATA_NAME).requests
 	$(TIMER) "queries\tCoreCH" "cat $(DATA_NAME).requests | xargs curl &> /dev/null"
 	@cat osrm-routed.pid | xargs kill
 	@rm osrm-routed.pid
-	@/bin/sh -c '$(OSRM_ROUTED) --algorithm=MLD mld/$(DATA_NAME).osrm > /dev/null & echo "$$!" > osrm-routed.pid'
-	@sleep 1
-	$(TIMER) "queries\tMLD" "cat $(DATA_NAME).requests | xargs curl &> /dev/null"
-	@cat osrm-routed.pid | xargs kill
-	@rm osrm-routed.pid
+	# @/bin/sh -c '$(OSRM_ROUTED) --algorithm=MLD mld/$(DATA_NAME).osrm > /dev/null & echo "$$!" > osrm-routed.pid'
+	# @sleep 1
+	# $(TIMER) "queries\tMLD" "cat $(DATA_NAME).requests | xargs curl &> /dev/null"
+	# @cat osrm-routed.pid | xargs kill
+	# @rm osrm-routed.pid
 	@echo "**** timings ***"
 	@cat /tmp/osrm.timings
 	@echo "****************"
