@@ -65,21 +65,21 @@ BOOST_AUTO_TEST_CASE(timezone_validation_test)
     doc.Parse(nonobj_props);
     BOOST_CHECK_THROW(util::validateFeature(doc), util::exception);
 
-    // auto missing_tzid = R"({ "type" : "Feature",
-    //                       "properties" : { }, "geometry" : { "type": "polygon",
-    //                       "coordinates": [[[8.28369,48.88277], [8.57757,
-    //                       48.88277], [8.57757, 49.07206], [8.28369,
-    //                       49.07206], [8.28369, 48.88277]]] }})";
-    // doc.Parse(missing_tzid);
-    // BOOST_CHECK_THROW(util::validateFeature(doc), util::exception);
+    auto missing_tzid = R"({ "type" : "Feature",
+                          "properties" : { }, "geometry" : { "type": "polygon",
+                          "coordinates": [[[8.28369,48.88277], [8.57757,
+                          48.88277], [8.57757, 49.07206], [8.28369,
+                          49.07206], [8.28369, 48.88277]]] }})";
+    doc.Parse(missing_tzid);
+    BOOST_CHECK_THROW(util::validateFeature(doc), util::exception);
 
-    // auto tzid_err = R"({ "type" : "Feature",
-    //                   "properties" : { "tzid" : []}, "geometry" : { "type": "polygon",
-    //                   "coordinates": [[[8.28369,48.88277], [8.57757,
-    //                   48.88277], [8.57757, 49.07206], [8.28369,
-    //                   49.07206], [8.28369, 48.88277]]] }})";
-    // doc.Parse(tzid_err);
-    // BOOST_CHECK_THROW(util::validateFeature(doc), util::exception);
+    auto tzid_err = R"({ "type" : "Feature",
+                      "properties" : { "tzid" : []}, "geometry" : { "type": "polygon",
+                      "coordinates": [[[8.28369,48.88277], [8.57757,
+                      48.88277], [8.57757, 49.07206], [8.28369,
+                      49.07206], [8.28369, 48.88277]]] }})";
+    doc.Parse(tzid_err);
+    BOOST_CHECK_THROW(util::validateFeature(doc), util::exception);
 
     auto missing_geom = R"({ "type" : "Feature",
                           "properties" : { "tzid" : "Europe/Berlin"}, "geometries" : {
@@ -127,12 +127,12 @@ BOOST_AUTO_TEST_CASE(timezone_validation_test)
     doc.Parse(missing_coords);
     BOOST_CHECK_THROW(util::validateFeature(doc), util::exception);
 
-    // auto missing_outerring = R"({ "type" : "Feature",
-    //     "properties" : { "tzid" : "Europe/Berlin"}, "geometry" : { "type": "polygon",
-    //   "coordinates": [[8.28369,48.88277], [8.57757,
-    //   48.88277], [8.57757, 49.07206], [8.28369,
-    //   49.07206], [8.28369, 48.88277]] }})";
-    // doc.Parse(missing_outerring);
-    // BOOST_CHECK_THROW(util::validateFeature(doc), util::exception);
+    auto missing_outerring = R"({ "type" : "Feature",
+        "properties" : { "tzid" : "Europe/Berlin"}, "geometry" : { "type": "polygon",
+      "coordinates": [[8.28369,48.88277], [8.57757,
+      48.88277], [8.57757, 49.07206], [8.28369,
+      49.07206], [8.28369, 48.88277]] }})";
+    doc.Parse(missing_outerring);
+    BOOST_CHECK_THROW(util::validateFeature(doc), util::exception);
 }
 BOOST_AUTO_TEST_SUITE_END()

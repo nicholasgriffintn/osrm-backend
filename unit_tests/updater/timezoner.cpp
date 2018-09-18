@@ -15,8 +15,7 @@ BOOST_AUTO_TEST_CASE(timezoner_test)
     auto json = R"({ "type" : "FeatureCollection", "features": [{ "type" : 
                         "Feature", "properties" : { "tzid" : "Europe/Berlin"},
                         "geometry" : { "type" : "polygon", "coordinates":
-                        [[[8.28369,48.88277], [8.57757, 48.88277], [8.57757, 49.07206], [8.28369,
-                        49.07206], [8.28369, 48.88277]]] }} ]} )";
+                        [[[8.28369,48.88277], [8.57757, 48.88277], [8.57757, 49.07206], [8.28369,49.07206], [8.28369, 48.88277]]] }} ]} )";
     std::time_t now = time(0);
     BOOST_CHECK_NO_THROW(Timezoner tz(json, now));
 
