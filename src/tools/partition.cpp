@@ -114,9 +114,9 @@ return_code parseArguments(int argc,
          "Maximum cell sizes starting from the level 1. The first cell size value is a bisection "
          "termination citerion");
     //
-    ("cache-distances",
-     boost::program_options::bool_switch(&config.cache_distances)->default_value(false),
-     "Store distances for MLD edges, avoiding the need for query-time re-calculation.");
+    // ("cache-distances",
+    //  boost::program_options::bool_switch(&config.cache_distances)->default_value(false),
+    //  "Store distances for MLD edges, avoiding the need for query-time re-calculation.");
 
     // hidden options, will be allowed on command line, but will not be
     // shown to the user
