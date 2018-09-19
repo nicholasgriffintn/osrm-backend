@@ -43,8 +43,14 @@ struct PartitionerConfig final : storage::IOConfig
     std::size_t num_optimizing_cuts;
     std::size_t small_component_size;
     std::vector<std::size_t> max_cell_sizes;
+
+    // Whether to store distances for MLD edges in addition to duration/weight
+    // Defaults to false.  Setting to true will require more storage/memory,
+    // but avoids the need for path unpacking to learn the distance of a CH
+    // route (useful for faster distance results in table queries)
+    bool cache_distances;
 };
-}
-}
+} // namespace partitioner
+} // namespace osrm
 
 #endif // OSRM_PARTITIONER_CONFIG_HPP
