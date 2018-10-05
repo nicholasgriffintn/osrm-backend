@@ -42,7 +42,8 @@ MMapMemoryAllocator::MMapMemoryAllocator(const storage::StorageConfig &config,
     (void)memory_file; // TODO remove
     storage::Storage storage(config);
     std::vector<std::pair<bool, boost::filesystem::path>> files = storage.GetStaticFiles();
-    std::vector<std::pair<bool, boost::filesystem::path>> updatable_files = storage.GetUpdatableFiles();
+    std::vector<std::pair<bool, boost::filesystem::path>> updatable_files =
+        storage.GetUpdatableFiles();
     files.insert(files.end(), updatable_files.begin(), updatable_files.end());
 
     std::vector<storage::SharedDataIndex::AllocatedRegion> allocated_regions;
@@ -70,8 +71,24 @@ MMapMemoryAllocator::MMapMemoryAllocator(const storage::StorageConfig &config,
         }
     }
 
+    {
+        // Figure out the path to the rtree file (it's not a tar file)
+        auto absolute_file_index_path =
+            boost::filesystem::absolute(config.GetPath(".osrm.fileIndex"));
+
+        // Convert the boost::filesystem::path object into a plain string
+        // that's stored as a member of this allocator object
+        rtree_filename = absolute_file_index_path.string();
+
+        storage::TarDataLayout fake_layout;
+
+        fake_layout.SetBlock("/common/rtree/file_index_path",
+                             {rtree_filename.size(), rtree_filename.size() + 1, 0});
+        allocated_regions.push_back({&(rtree_filename[0]), std::move(fake_layout)});
+    }
+
     index = storage::SharedDataIndex{std::move(allocated_regions)};
-}
+} // namespace datafacade
 
 MMapMemoryAllocator::~MMapMemoryAllocator() {}
 

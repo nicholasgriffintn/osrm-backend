@@ -10,6 +10,7 @@
 #include <boost/iostreams/device/mapped_file.hpp>
 
 #include <memory>
+#include <string>
 
 namespace osrm
 {
@@ -36,6 +37,7 @@ class MMapMemoryAllocator : public ContiguousBlockAllocator
     util::vector_view<char> mapped_memory;
     // boost::iostreams::mapped_file mapped_memory_file;
     std::vector<boost::iostreams::mapped_file> mapped_memory_files;
+    std::string rtree_filename;
 };
 
 } // namespace datafacade
