@@ -57,7 +57,7 @@ inline std::string trimName(const std::string &name_prefix, const std::string &n
 class DataLayout
 {
   public:
-    DataLayout() : blocks{} {} // block is vector
+    DataLayout() : blocks{} {}
 
     inline void SetBlock(const std::string &name, Block block) { blocks[name] = std::move(block); }
 
@@ -83,13 +83,20 @@ class DataLayout
         return result;
     }
 
-    template <typename T> inline T *GetBlockPtr(char *shared_memory, const std::string &name) const
+    template <typename T> inline T *GetBlockPtr(char *memory_ptr, const std::string &name) const
     {
-        static_assert(BLOCK_ALIGNMENT % std::alignment_of<T>::value == 0,
-                      "Datatype does not fit alignment constraints.");
+        // TODO clean up with a base class or template
+        //
+        // static_assert(BLOCK_ALIGNMENT % std::alignment_of<T>::value == 0,
+        //               "Datatype does not fit alignment constraints.");
 
-        char *ptr = (char *)GetAlignedBlockPtr(shared_memory, name);
-        return (T *)ptr;
+        // char *ptr = (char *)GetAlignedBlockPtr(shared_memory, name);
+        // return (T *)ptr;
+        std::cout << "DEBUG: DataLayout called" << std::endl;
+        auto offset = GetBlock(name).offset;
+
+        const auto offset_memory = memory_ptr + offset;
+        return reinterpret_cast<T *>(offset_memory);
     }
 
     // Depending on the name prefix this function either lists all blocks with the same prefix
@@ -164,6 +171,8 @@ class TarDataLayout : public DataLayout // clean up: make ^ into a base class wi
                                         // and then subclasses with the implementation
 {
   public:
+    // TODO this won't get called by SharedDataIndex unless we refactor into a base class with virtual
+    // functions
     template <typename T> inline T *GetBlockPtr(char *memory_ptr, const std::string &name) const
     {
         auto offset = GetBlock(name).offset;
