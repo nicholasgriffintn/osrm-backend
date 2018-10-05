@@ -297,22 +297,8 @@ void Storage::PopulateStaticLayout(DataLayout &static_layout)
     }
 
     constexpr bool REQUIRED = true;
-    constexpr bool OPTIONAL = false;
-    std::vector<std::pair<bool, boost::filesystem::path>> tar_files = {
-        {OPTIONAL, config.GetPath(".osrm.cells")},
-        {OPTIONAL, config.GetPath(".osrm.partition")},
-        {REQUIRED, config.GetPath(".osrm.icd")},
-        {REQUIRED, config.GetPath(".osrm.properties")},
-        {REQUIRED, config.GetPath(".osrm.nbg_nodes")},
-        {REQUIRED, config.GetPath(".osrm.ebg_nodes")},
-        {REQUIRED, config.GetPath(".osrm.tls")},
-        {REQUIRED, config.GetPath(".osrm.tld")},
-        {REQUIRED, config.GetPath(".osrm.maneuver_overrides")},
-        {REQUIRED, config.GetPath(".osrm.edges")},
-        {REQUIRED, config.GetPath(".osrm.names")},
-        {REQUIRED, config.GetPath(".osrm.ramIndex")},
-    };
 
+    std::vector<std::pair<bool, boost::filesystem::path>> tar_files = Storage::GetStaticFiles();
     for (const auto &file : tar_files)
     {
         if (boost::filesystem::exists(file.second))
@@ -328,6 +314,27 @@ void Storage::PopulateStaticLayout(DataLayout &static_layout)
             }
         }
     }
+}
+
+std::vector<std::pair<bool, boost::filesystem::path>> Storage::GetStaticFiles()
+{
+    constexpr bool REQUIRED = true;
+    constexpr bool OPTIONAL = false;
+    std::vector<std::pair<bool, boost::filesystem::path>> tar_files = {
+        {OPTIONAL, config.GetPath(".osrm.cells")},
+        {OPTIONAL, config.GetPath(".osrm.partition")},
+        {REQUIRED, config.GetPath(".osrm.icd")},
+        {REQUIRED, config.GetPath(".osrm.properties")},
+        {REQUIRED, config.GetPath(".osrm.nbg_nodes")},
+        {REQUIRED, config.GetPath(".osrm.ebg_nodes")},
+        {REQUIRED, config.GetPath(".osrm.tls")},
+        {REQUIRED, config.GetPath(".osrm.tld")},
+        {REQUIRED, config.GetPath(".osrm.maneuver_overrides")},
+        {REQUIRED, config.GetPath(".osrm.edges")},
+        {REQUIRED, config.GetPath(".osrm.names")},
+        {REQUIRED, config.GetPath(".osrm.ramIndex")},
+    };
+    return tar_files;
 }
 
 void Storage::PopulateUpdatableLayout(DataLayout &updatable_layout)

@@ -34,7 +34,8 @@ class MMapMemoryAllocator : public ContiguousBlockAllocator
   private:
     storage::SharedDataIndex index;
     util::vector_view<char> mapped_memory;
-    boost::iostreams::mapped_file mapped_memory_file;
+    // boost::iostreams::mapped_file mapped_memory_file;
+    std::vector<boost::iostreams::mapped_file> mapped_memory_files;
 };
 
 } // namespace datafacade

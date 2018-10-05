@@ -51,6 +51,7 @@ class Storage
     void PopulateUpdatableLayout(DataLayout &layout);
     void PopulateStaticData(const SharedDataIndex &index);
     void PopulateUpdatableData(const SharedDataIndex &index);
+    std::vector<std::pair<bool, boost::filesystem::path>> GetStaticFiles();
 
   private:
     StorageConfig config;

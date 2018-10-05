@@ -57,7 +57,7 @@ inline std::string trimName(const std::string &name_prefix, const std::string &n
 class DataLayout
 {
   public:
-    DataLayout() : blocks{} {}
+    DataLayout() : blocks{} {} // block is vector
 
     inline void SetBlock(const std::string &name, Block block) { blocks[name] = std::move(block); }
 
@@ -115,7 +115,7 @@ class DataLayout
         }
     }
 
-  private:
+  protected:
     friend void serialization::read(io::BufferReader &reader, DataLayout &layout);
     friend void serialization::write(io::BufferWriter &writer, const DataLayout &layout);
 
@@ -158,6 +158,19 @@ class DataLayout
 
     static constexpr std::size_t BLOCK_ALIGNMENT = 64;
     std::map<std::string, Block> blocks;
+};
+
+class TarDataLayout : public DataLayout // clean up: make ^ into a base class with virtual functions
+                                        // and then subclasses with the implementation
+{
+  public:
+    template <typename T> inline T *GetBlockPtr(char *memory_ptr, const std::string &name) const
+    {
+        auto offset = GetBlock(name).offset;
+
+        const auto offset_memory = memory_ptr + offset;
+        return reinterpret_cast<T *>(offset_memory);
+    }
 };
 
 struct SharedRegion
