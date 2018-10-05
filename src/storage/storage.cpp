@@ -340,17 +340,7 @@ std::vector<std::pair<bool, boost::filesystem::path>> Storage::GetStaticFiles()
 void Storage::PopulateUpdatableLayout(DataLayout &updatable_layout)
 {
     constexpr bool REQUIRED = true;
-    constexpr bool OPTIONAL = false;
-    std::vector<std::pair<bool, boost::filesystem::path>> tar_files = {
-        {OPTIONAL, config.GetPath(".osrm.mldgr")},
-        {OPTIONAL, config.GetPath(".osrm.cell_metrics")},
-        {OPTIONAL, config.GetPath(".osrm.hsgr")},
-        {REQUIRED, config.GetPath(".osrm.datasource_names")},
-        {REQUIRED, config.GetPath(".osrm.geometry")},
-        {REQUIRED, config.GetPath(".osrm.turn_weight_penalties")},
-        {REQUIRED, config.GetPath(".osrm.turn_duration_penalties")},
-    };
-
+    std::vector<std::pair<bool, boost::filesystem::path>> tar_files = Storage::GetUpdatableFiles();
     for (const auto &file : tar_files)
     {
         if (boost::filesystem::exists(file.second))
@@ -368,6 +358,21 @@ void Storage::PopulateUpdatableLayout(DataLayout &updatable_layout)
     }
 }
 
+std::vector<std::pair<bool, boost::filesystem::path>> Storage::GetUpdatableFiles()
+{
+    constexpr bool REQUIRED = true;
+    constexpr bool OPTIONAL = false;
+    std::vector<std::pair<bool, boost::filesystem::path>> tar_files = {
+        {OPTIONAL, config.GetPath(".osrm.mldgr")},
+        {OPTIONAL, config.GetPath(".osrm.cell_metrics")},
+        {OPTIONAL, config.GetPath(".osrm.hsgr")},
+        {REQUIRED, config.GetPath(".osrm.datasource_names")},
+        {REQUIRED, config.GetPath(".osrm.geometry")},
+        {REQUIRED, config.GetPath(".osrm.turn_weight_penalties")},
+        {REQUIRED, config.GetPath(".osrm.turn_duration_penalties")},
+    };
+    return tar_files;
+}
 void Storage::PopulateStaticData(const SharedDataIndex &index)
 {
     // read actual data into shared memory object //

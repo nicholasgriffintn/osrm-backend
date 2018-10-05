@@ -39,22 +39,26 @@ void readBlocks(const boost::filesystem::path &path, storage::DataLayout &layout
 MMapMemoryAllocator::MMapMemoryAllocator(const storage::StorageConfig &config,
                                          const boost::filesystem::path &memory_file)
 {
-    (void)memory_file;
+    (void)memory_file; // TODO remove
     storage::Storage storage(config);
+    std::vector<std::pair<bool, boost::filesystem::path>> files = storage.GetStaticFiles();
+    std::vector<std::pair<bool, boost::filesystem::path>> updatable_files = storage.GetUpdatableFiles();
+    files.insert(files.end(), updatable_files.begin(), updatable_files.end());
 
-    storage::TarDataLayout static_layout;
+    std::vector<storage::SharedDataIndex::AllocatedRegion> allocated_regions;
 
-    std::vector<std::pair<bool, boost::filesystem::path>> static_files = storage.GetStaticFiles();
     constexpr bool REQUIRED = true;
 
-    for (const auto &file : static_files)
+    for (const auto &file : files)
     {
         if (boost::filesystem::exists(file.second))
         {
+            storage::TarDataLayout layout;
             boost::iostreams::mapped_file mapped_memory_file;
             util::mmapFile<char>(file.second, mapped_memory_file);
-            mapped_memory_files.push_back(mapped_memory_file);
-            readBlocks(file.second, static_layout);
+            mapped_memory_files.push_back(std::move(mapped_memory_file));
+            readBlocks(file.second, layout);
+            allocated_regions.push_back({mapped_memory_file.data(), std::move(layout)});
         }
         else
         {
@@ -65,6 +69,8 @@ MMapMemoryAllocator::MMapMemoryAllocator(const storage::StorageConfig &config,
             }
         }
     }
+
+    index = storage::SharedDataIndex{std::move(allocated_regions)};
 }
 
 MMapMemoryAllocator::~MMapMemoryAllocator() {}
