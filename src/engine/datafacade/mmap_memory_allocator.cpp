@@ -17,7 +17,7 @@ namespace engine
 namespace datafacade
 {
 
-void readBlocks(const boost::filesystem::path &path, storage::DataLayout &layout)
+void readBlocks(const boost::filesystem::path &path, std::unique_ptr<storage::DataLayout> &layout)
 {
     storage::tar::FileReader reader(path, storage::tar::FileReader::VerifyFingerprint);
 
@@ -30,8 +30,8 @@ void readBlocks(const boost::filesystem::path &path, storage::DataLayout &layout
         if (name_end == std::string::npos)
         {
             auto number_of_elements = reader.ReadElementCount64(entry.name);
-            layout.SetBlock(entry.name,
-                            storage::Block{number_of_elements, entry.size, entry.offset});
+            layout->SetBlock(entry.name,
+                             storage::Block{number_of_elements, entry.size, entry.offset});
         }
     }
 }
@@ -54,7 +54,7 @@ MMapMemoryAllocator::MMapMemoryAllocator(const storage::StorageConfig &config,
     {
         if (boost::filesystem::exists(file.second))
         {
-            storage::TarDataLayout layout;
+            std::unique_ptr<storage::DataLayout> layout = std::make_unique<storage::DataLayout>();
             boost::iostreams::mapped_file mapped_memory_file;
             util::mmapFile<char>(file.second, mapped_memory_file);
             mapped_memory_files.push_back(std::move(mapped_memory_file));
@@ -80,12 +80,12 @@ MMapMemoryAllocator::MMapMemoryAllocator(const storage::StorageConfig &config,
         // that's stored as a member of this allocator object
         rtree_filename = absolute_file_index_path.string();
 
-        storage::TarDataLayout fake_layout;
+        std::unique_ptr<storage::DataLayout> fake_layout = std::make_unique<storage::DataLayout>();
 
         // Here, we hardcode the special file_index_path block name.
         // The important bit here is that the "offset" is set to zero
-        fake_layout.SetBlock("/common/rtree/file_index_path",
-                             {rtree_filename.size(), rtree_filename.size() + 1, 0});
+        fake_layout->SetBlock("/common/rtree/file_index_path",
+                              {rtree_filename.size(), rtree_filename.size() + 1, 0});
 
         // Now, we add one more AllocatedRegion, with it's start address as the start
         // of the rtree_filename string we've saved.  In the fake_layout, we've

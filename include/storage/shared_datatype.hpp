@@ -23,9 +23,9 @@ namespace storage
 class DataLayout;
 namespace serialization
 {
-inline void read(io::BufferReader &reader, DataLayout &layout);
+inline void read(io::BufferReader &reader, std::unique_ptr<DataLayout> &layout);
 
-inline void write(io::BufferWriter &writer, const DataLayout &layout);
+inline void write(io::BufferWriter &writer, const std::unique_ptr<DataLayout> &layout);
 } // namespace serialization
 
 namespace detail
@@ -86,11 +86,11 @@ class DataLayout
     template <typename T> inline T *GetBlockPtr(char *memory_ptr, const std::string &name) const
     {
         // TODO clean up with a base class or template
-        //
+
         // static_assert(BLOCK_ALIGNMENT % std::alignment_of<T>::value == 0,
         //               "Datatype does not fit alignment constraints.");
 
-        // char *ptr = (char *)GetAlignedBlockPtr(shared_memory, name);
+        // char *ptr = (char *)GetAlignedBlockPtr(memory_ptr, name);
         // return (T *)ptr;
         std::cout << "DEBUG: DataLayout called" << std::endl;
         auto offset = GetBlock(name).offset;
@@ -123,8 +123,9 @@ class DataLayout
     }
 
   protected:
-    friend void serialization::read(io::BufferReader &reader, DataLayout &layout);
-    friend void serialization::write(io::BufferWriter &writer, const DataLayout &layout);
+    friend void serialization::read(io::BufferReader &reader, std::unique_ptr<DataLayout> &layout);
+    friend void serialization::write(io::BufferWriter &writer,
+                                     const std::unique_ptr<DataLayout> &layout);
 
     const Block &GetBlock(const std::string &name) const
     {
@@ -171,7 +172,8 @@ class TarDataLayout : public DataLayout // clean up: make ^ into a base class wi
                                         // and then subclasses with the implementation
 {
   public:
-    // TODO this won't get called by SharedDataIndex unless we refactor into a base class with virtual
+    // TODO this won't get called by SharedDataIndex unless we refactor into a base class with
+    // virtual
     // functions
     template <typename T> inline T *GetBlockPtr(char *memory_ptr, const std::string &name) const
     {

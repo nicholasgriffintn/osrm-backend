@@ -266,11 +266,14 @@ template <typename K, typename V> void write(io::BufferWriter &writer, const std
     }
 }
 
-inline void read(io::BufferReader &reader, DataLayout &layout) { read(reader, layout.blocks); }
-
-inline void write(io::BufferWriter &writer, const DataLayout &layout)
+inline void read(io::BufferReader &reader, std::unique_ptr<DataLayout> &layout)
 {
-    write(writer, layout.blocks);
+    read(reader, layout->blocks);
+}
+
+inline void write(io::BufferWriter &writer, const std::unique_ptr<DataLayout> &layout)
+{
+    write(writer, layout->blocks);
 }
 }
 }
