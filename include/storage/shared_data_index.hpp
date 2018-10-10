@@ -20,7 +20,7 @@ class SharedDataIndex
     struct AllocatedRegion
     {
         char *memory_ptr;
-        std::unique_ptr<DataLayout> layout;
+        std::unique_ptr<BaseDataLayout> layout;
     };
 
     SharedDataIndex() = default;

@@ -54,50 +54,20 @@ inline std::string trimName(const std::string &name_prefix, const std::string &n
 }
 } // namespace detail
 
-class DataLayout
+class BaseDataLayout
 {
   public:
-    DataLayout() : blocks{} {}
+    virtual ~BaseDataLayout() = default;
 
-    inline void SetBlock(const std::string &name, Block block) { blocks[name] = std::move(block); }
+    virtual inline void SetBlock(const std::string &name, Block block) = 0;
 
-    inline uint64_t GetBlockEntries(const std::string &name) const
-    {
-        return GetBlock(name).num_entries;
-    }
+    virtual inline uint64_t GetBlockEntries(const std::string &name) const = 0;
 
-    inline uint64_t GetBlockSize(const std::string &name) const { return GetBlock(name).byte_size; }
+    virtual inline uint64_t GetBlockSize(const std::string &name) const = 0;
 
-    inline bool HasBlock(const std::string &name) const
-    {
-        return blocks.find(name) != blocks.end();
-    }
+    virtual inline bool HasBlock(const std::string &name) const = 0;
 
-    inline uint64_t GetSizeOfLayout() const
-    {
-        uint64_t result = 0;
-        for (const auto &name_and_block : blocks)
-        {
-            result += GetBlockSize(name_and_block.first) + BLOCK_ALIGNMENT;
-        }
-        return result;
-    }
-
-    template <typename T> inline T *GetBlockPtr(char *memory_ptr, const std::string &name) const
-    {
-        // TODO clean up with a base class or template
-
-        // static_assert(BLOCK_ALIGNMENT % std::alignment_of<T>::value == 0,
-        //               "Datatype does not fit alignment constraints.");
-
-        // char *ptr = (char *)GetAlignedBlockPtr(memory_ptr, name);
-        // return (T *)ptr;
-        std::cout << "DEBUG: DataLayout called" << std::endl;
-        auto offset = GetBlock(name).offset;
-
-        const auto offset_memory = memory_ptr + offset;
-        return reinterpret_cast<T *>(offset_memory);
-    }
+    virtual inline uint64_t GetSizeOfLayout() const = 0;
 
     // Depending on the name prefix this function either lists all blocks with the same prefix
     // or all entries in the sub-directory.
@@ -123,6 +93,52 @@ class DataLayout
     }
 
   protected:
+    std::map<std::string, Block> blocks;
+};
+
+class DataLayout final : public BaseDataLayout
+{
+  public:
+    inline void SetBlock(const std::string &name, Block block) override final
+    {
+        blocks[name] = std::move(block);
+    }
+
+    inline uint64_t GetBlockEntries(const std::string &name) const override final
+    {
+        return GetBlock(name).num_entries;
+    }
+
+    inline uint64_t GetBlockSize(const std::string &name) const override final
+    {
+        return GetBlock(name).byte_size;
+    }
+
+    inline bool HasBlock(const std::string &name) const override final
+    {
+        return blocks.find(name) != blocks.end();
+    }
+
+    inline uint64_t GetSizeOfLayout() const override final
+    {
+        uint64_t result = 0;
+        for (const auto &name_and_block : blocks)
+        {
+            result += GetBlockSize(name_and_block.first) + BLOCK_ALIGNMENT;
+        }
+        return result;
+    }
+
+    template <typename T> inline T *GetBlockPtr(char *shared_memory, const std::string &name) const
+    {
+        static_assert(BLOCK_ALIGNMENT % std::alignment_of<T>::value == 0,
+                      "Datatype does not fit alignment constraints.");
+
+        char *ptr = (char *)GetAlignedBlockPtr(shared_memory, name);
+        return (T *)ptr;
+    }
+
+  private:
     friend void serialization::read(io::BufferReader &reader, std::unique_ptr<DataLayout> &layout);
     friend void serialization::write(io::BufferWriter &writer,
                                      const std::unique_ptr<DataLayout> &layout);
@@ -165,22 +181,65 @@ class DataLayout
     }
 
     static constexpr std::size_t BLOCK_ALIGNMENT = 64;
-    std::map<std::string, Block> blocks;
 };
 
-class TarDataLayout : public DataLayout // clean up: make ^ into a base class with virtual functions
-                                        // and then subclasses with the implementation
+class TarDataLayout final : public BaseDataLayout
 {
   public:
-    // TODO this won't get called by SharedDataIndex unless we refactor into a base class with
-    // virtual
-    // functions
+    inline void SetBlock(const std::string &name, Block block) override final
+    {
+        blocks[name] = std::move(block);
+    }
+
+    inline uint64_t GetBlockEntries(const std::string &name) const override final
+    {
+        return GetBlock(name).num_entries;
+    }
+
+    inline uint64_t GetBlockSize(const std::string &name) const override final
+    {
+        return GetBlock(name).byte_size;
+    }
+
+    inline bool HasBlock(const std::string &name) const override final
+    {
+        return blocks.find(name) != blocks.end();
+    }
+
+    inline uint64_t GetSizeOfLayout() const override final
+    {
+        uint64_t result = 0;
+        for (const auto &name_and_block : blocks)
+        {
+            result += GetBlockSize(name_and_block.first);
+        }
+        return result;
+    }
+
     template <typename T> inline T *GetBlockPtr(char *memory_ptr, const std::string &name) const
     {
+
+        std::cout << "DEBUG: DataLayout called" << std::endl;
         auto offset = GetBlock(name).offset;
 
         const auto offset_memory = memory_ptr + offset;
         return reinterpret_cast<T *>(offset_memory);
+    }
+
+  private:
+    friend void serialization::read(io::BufferReader &reader, std::unique_ptr<DataLayout> &layout);
+    friend void serialization::write(io::BufferWriter &writer,
+                                     const std::unique_ptr<DataLayout> &layout);
+
+    const Block &GetBlock(const std::string &name) const
+    {
+        auto iter = blocks.find(name);
+        if (iter == blocks.end())
+        {
+            throw util::exception("Could not find block " + name);
+        }
+
+        return iter->second;
     }
 };
 

@@ -17,7 +17,8 @@ namespace engine
 namespace datafacade
 {
 
-void readBlocks(const boost::filesystem::path &path, std::unique_ptr<storage::DataLayout> &layout)
+void readBlocks(const boost::filesystem::path &path,
+                std::unique_ptr<storage::TarDataLayout> &layout)
 {
     storage::tar::FileReader reader(path, storage::tar::FileReader::VerifyFingerprint);
 
@@ -54,7 +55,8 @@ MMapMemoryAllocator::MMapMemoryAllocator(const storage::StorageConfig &config,
     {
         if (boost::filesystem::exists(file.second))
         {
-            std::unique_ptr<storage::DataLayout> layout = std::make_unique<storage::DataLayout>();
+            std::unique_ptr<storage::TarDataLayout> layout =
+                std::make_unique<storage::TarDataLayout>();
             boost::iostreams::mapped_file mapped_memory_file;
             util::mmapFile<char>(file.second, mapped_memory_file);
             mapped_memory_files.push_back(std::move(mapped_memory_file));
@@ -80,7 +82,8 @@ MMapMemoryAllocator::MMapMemoryAllocator(const storage::StorageConfig &config,
         // that's stored as a member of this allocator object
         rtree_filename = absolute_file_index_path.string();
 
-        std::unique_ptr<storage::DataLayout> fake_layout = std::make_unique<storage::DataLayout>();
+        std::unique_ptr<storage::TarDataLayout> fake_layout =
+            std::make_unique<storage::TarDataLayout>();
 
         // Here, we hardcode the special file_index_path block name.
         // The important bit here is that the "offset" is set to zero
