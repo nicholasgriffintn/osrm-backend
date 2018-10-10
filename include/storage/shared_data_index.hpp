@@ -47,13 +47,13 @@ class SharedDataIndex
     template <typename T> auto GetBlockPtr(const std::string &name) const
     {
         const auto &region = GetBlockRegion(name);
-        return region.layout->GetBlockPtr<T>(region.memory_ptr, name);
+        return reinterpret_cast<T *>(region.layout->GetBlockPtr(region.memory_ptr, name));
     }
 
     template <typename T> auto GetBlockPtr(const std::string &name)
     {
         const auto &region = GetBlockRegion(name);
-        return region.layout->GetBlockPtr<T>(region.memory_ptr, name);
+        return reinterpret_cast<T *>(region.layout->GetBlockPtr(region.memory_ptr, name));
     }
 
     std::size_t GetBlockEntries(const std::string &name) const

@@ -92,6 +92,8 @@ class BaseDataLayout
         }
     }
 
+  virtual inline void *GetBlockPtr(char *shared_memory, const std::string &name) const = 0;
+
   protected:
     std::map<std::string, Block> blocks;
 };
@@ -129,13 +131,13 @@ class DataLayout final : public BaseDataLayout
         return result;
     }
 
-    template <typename T> inline T *GetBlockPtr(char *shared_memory, const std::string &name) const
+    inline void *GetBlockPtr(char *shared_memory, const std::string &name) const override final
     {
-        static_assert(BLOCK_ALIGNMENT % std::alignment_of<T>::value == 0,
-                      "Datatype does not fit alignment constraints.");
+        // static_assert(BLOCK_ALIGNMENT % std::alignment_of<T>::value == 0,
+        //               "Datatype does not fit alignment constraints.");
 
         char *ptr = (char *)GetAlignedBlockPtr(shared_memory, name);
-        return (T *)ptr;
+        return ptr;
     }
 
   private:
@@ -216,14 +218,13 @@ class TarDataLayout final : public BaseDataLayout
         return result;
     }
 
-    template <typename T> inline T *GetBlockPtr(char *memory_ptr, const std::string &name) const
+    inline void *GetBlockPtr(char *memory_ptr, const std::string &name) const override final
     {
-
-        std::cout << "DEBUG: DataLayout called" << std::endl;
+        std::cout << "DEBUG: TarDataLayout called" << std::endl;
         auto offset = GetBlock(name).offset;
 
         const auto offset_memory = memory_ptr + offset;
-        return reinterpret_cast<T *>(offset_memory);
+        return offset_memory;
     }
 
   private:
