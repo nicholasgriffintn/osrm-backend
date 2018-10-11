@@ -92,7 +92,7 @@ class BaseDataLayout
         }
     }
 
-  virtual inline void *GetBlockPtr(char *shared_memory, const std::string &name) const = 0;
+    virtual inline void *GetBlockPtr(char *shared_memory, const std::string &name) const = 0;
 
   protected:
     std::map<std::string, Block> blocks;
@@ -133,10 +133,17 @@ class DataLayout final : public BaseDataLayout
 
     inline void *GetBlockPtr(char *shared_memory, const std::string &name) const override final
     {
+        std::cout << "DEBUG: DataLayout name: " << name;
+
+        std::cout << " shared_memory: " << shared_memory;
         // static_assert(BLOCK_ALIGNMENT % std::alignment_of<T>::value == 0,
         //               "Datatype does not fit alignment constraints.");
 
         char *ptr = (char *)GetAlignedBlockPtr(shared_memory, name);
+        std::cout << " ptr: " << static_cast<void *>(ptr) << " data: ";
+        for (int index = 0; index < 100; ++index)
+            std::cout << ptr[index];
+        std::cout << std::endl;
         return ptr;
     }
 
@@ -220,10 +227,15 @@ class TarDataLayout final : public BaseDataLayout
 
     inline void *GetBlockPtr(char *memory_ptr, const std::string &name) const override final
     {
-        std::cout << "DEBUG: TarDataLayout called" << std::endl;
+        std::cout << "DEBUG: TarDataLayout name: " << name;
         auto offset = GetBlock(name).offset;
 
         const auto offset_memory = memory_ptr + offset;
+        std::cout << " memory_ptr: " << static_cast<void *>(memory_ptr)
+                  << " offset_memory: " << static_cast<void *>(offset_memory) << " data: ";
+        for (int index = 0; index < 100; ++index)
+            std::cout << offset_memory[index];
+        std::cout << std::endl;
         return offset_memory;
     }
 

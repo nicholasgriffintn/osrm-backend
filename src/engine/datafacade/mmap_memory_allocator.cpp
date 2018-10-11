@@ -31,6 +31,10 @@ void readBlocks(const boost::filesystem::path &path,
         if (name_end == std::string::npos)
         {
             auto number_of_elements = reader.ReadElementCount64(entry.name);
+            std::cout << "DEBUG: name " << entry.name;
+            std::cout << " number_of_elements " << number_of_elements;
+            std::cout << " entry.size " << entry.size;
+            std::cout << " entry.offset " << entry.offset << std::endl;
             layout->SetBlock(entry.name,
                              storage::Block{number_of_elements, entry.size, entry.offset});
         }
