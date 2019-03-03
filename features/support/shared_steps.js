@@ -75,6 +75,10 @@ module.exports = function () {
                             got.message = json.message || '';
                         }
 
+                        if (headers.has('data_version')) {
+                            got.data_version = json.data_version || '';
+                        }
+
                         if (headers.has('#')) {
                             // comment column
                             got['#'] = row['#'];
@@ -115,7 +119,7 @@ module.exports = function () {
 
                         if (headers.has('weight')) {
                             if (row.weight.length) {
-                                if (!row.weight.match(/[\d\.]+/))
+                                if (!row.weight.match(/[\d.]+/))
                                     return cb(new Error('*** Weight must be specified as a numeric value. (ex: 8)'));
                                 got.weight = instructions ? util.format('%d', weight) : '';
                             } else {
@@ -151,7 +155,7 @@ module.exports = function () {
                         if (headers.has('locations')){
                             got.locations = (locations || '').trim();
                         }
-/*
+                        /*
                         if (headers.has('approaches')){
                             got.approaches = (approaches || '').trim();
                         }*/

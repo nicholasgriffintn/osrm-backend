@@ -137,6 +137,7 @@ class ContiguousInternalMemoryDataFacadeBase : public BaseDataFacade
     extractor::Datasources *m_datasources;
 
     std::uint32_t m_check_sum;
+    StringView m_data_timestamp;
     util::vector_view<util::Coordinate> m_coordinate_list;
     extractor::PackedOSMIDsView m_osmnodeid_list;
     util::vector_view<std::uint32_t> m_lane_description_offsets;
@@ -182,6 +183,8 @@ class ContiguousInternalMemoryDataFacadeBase : public BaseDataFacade
         exclude_mask = m_profile_properties->excludable_classes[exclude_index];
 
         m_check_sum = *index.GetBlockPtr<std::uint32_t>("/common/connectivity_checksum");
+
+        m_data_timestamp = make_timestamp_view(index, "/common/timestamp");
 
         std::tie(m_coordinate_list, m_osmnodeid_list) =
             make_nbn_data_view(index, "/common/nbn_data");
@@ -312,12 +315,13 @@ class ContiguousInternalMemoryDataFacadeBase : public BaseDataFacade
     std::vector<PhantomNodeWithDistance>
     NearestPhantomNodesInRange(const util::Coordinate input_coordinate,
                                const float max_distance,
-                               const Approach approach) const override final
+                               const Approach approach,
+                               const bool use_all_edges) const override final
     {
         BOOST_ASSERT(m_geospatial_query.get());
 
         return m_geospatial_query->NearestPhantomNodesInRange(
-            input_coordinate, max_distance, approach);
+            input_coordinate, max_distance, approach, use_all_edges);
     }
 
     std::vector<PhantomNodeWithDistance>
@@ -325,12 +329,13 @@ class ContiguousInternalMemoryDataFacadeBase : public BaseDataFacade
                                const float max_distance,
                                const int bearing,
                                const int bearing_range,
-                               const Approach approach) const override final
+                               const Approach approach,
+                               const bool use_all_edges) const override final
     {
         BOOST_ASSERT(m_geospatial_query.get());
 
         return m_geospatial_query->NearestPhantomNodesInRange(
-            input_coordinate, max_distance, bearing, bearing_range, approach);
+            input_coordinate, max_distance, bearing, bearing_range, approach, use_all_edges);
     }
 
     std::vector<PhantomNodeWithDistance>
@@ -384,23 +389,25 @@ class ContiguousInternalMemoryDataFacadeBase : public BaseDataFacade
 
     std::pair<PhantomNode, PhantomNode>
     NearestPhantomNodeWithAlternativeFromBigComponent(const util::Coordinate input_coordinate,
-                                                      const Approach approach) const override final
+                                                      const Approach approach,
+                                                      const bool use_all_edges) const override final
     {
         BOOST_ASSERT(m_geospatial_query.get());
 
         return m_geospatial_query->NearestPhantomNodeWithAlternativeFromBigComponent(
-            input_coordinate, approach);
+            input_coordinate, approach, use_all_edges);
     }
 
     std::pair<PhantomNode, PhantomNode>
     NearestPhantomNodeWithAlternativeFromBigComponent(const util::Coordinate input_coordinate,
                                                       const double max_distance,
-                                                      const Approach approach) const override final
+                                                      const Approach approach,
+                                                      const bool use_all_edges) const override final
     {
         BOOST_ASSERT(m_geospatial_query.get());
 
         return m_geospatial_query->NearestPhantomNodeWithAlternativeFromBigComponent(
-            input_coordinate, max_distance, approach);
+            input_coordinate, max_distance, approach, use_all_edges);
     }
 
     std::pair<PhantomNode, PhantomNode>
@@ -408,27 +415,34 @@ class ContiguousInternalMemoryDataFacadeBase : public BaseDataFacade
                                                       const double max_distance,
                                                       const int bearing,
                                                       const int bearing_range,
-                                                      const Approach approach) const override final
+                                                      const Approach approach,
+                                                      const bool use_all_edges) const override final
     {
         BOOST_ASSERT(m_geospatial_query.get());
 
         return m_geospatial_query->NearestPhantomNodeWithAlternativeFromBigComponent(
-            input_coordinate, max_distance, bearing, bearing_range, approach);
+            input_coordinate, max_distance, bearing, bearing_range, approach, use_all_edges);
     }
 
     std::pair<PhantomNode, PhantomNode>
     NearestPhantomNodeWithAlternativeFromBigComponent(const util::Coordinate input_coordinate,
                                                       const int bearing,
                                                       const int bearing_range,
-                                                      const Approach approach) const override final
+                                                      const Approach approach,
+                                                      const bool use_all_edges) const override final
     {
         BOOST_ASSERT(m_geospatial_query.get());
 
         return m_geospatial_query->NearestPhantomNodeWithAlternativeFromBigComponent(
-            input_coordinate, bearing, bearing_range, approach);
+            input_coordinate, bearing, bearing_range, approach, use_all_edges);
     }
 
     std::uint32_t GetCheckSum() const override final { return m_check_sum; }
+
+    std::string GetTimestamp() const override final
+    {
+        return std::string(m_data_timestamp.begin(), m_data_timestamp.end());
+    }
 
     GeometryID GetGeometryIndex(const NodeID id) const override final
     {
@@ -695,6 +709,11 @@ template <> class ContiguousInternalMemoryAlgorithmDataFacade<MLD> : public Algo
     EdgeDuration GetNodeDuration(const NodeID node) const override final
     {
         return query_graph.GetNodeDuration(node);
+    }
+
+    EdgeDistance GetNodeDistance(const NodeID node) const override final
+    {
+        return query_graph.GetNodeDistance(node);
     }
 
     bool IsForwardEdge(const NodeID node) const override final

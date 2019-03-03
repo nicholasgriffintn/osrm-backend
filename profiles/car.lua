@@ -44,7 +44,7 @@ function setup()
 
     -- Size of the vehicle, to be limited mostly by legal restriction of the way
     vehicle_length = 4.8, -- in meters, 4.8m is the length of large or familly car
-    vehicle_weight = 3500, -- in kilograms
+    vehicle_weight = 2000, -- in kilograms
 
     -- a list of suffixes to suppress in name change instructions. The suffixes also include common substrings of each other
     suffix_list = {
@@ -60,7 +60,8 @@ function setup()
       'lift_gate',
       'no',
       'entrance',
-      'height_restrictor'
+      'height_restrictor',
+      'arch'
     },
 
     access_tag_whitelist = Set {
@@ -269,6 +270,7 @@ function setup()
       ["at:rural"] = 100,
       ["at:trunk"] = 100,
       ["be:motorway"] = 120,
+      ["be-vlg:rural"] = 70,
       ["by:urban"] = 60,
       ["by:motorway"] = 110,
       ["ch:rural"] = 80,
